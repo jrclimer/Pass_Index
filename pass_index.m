@@ -81,7 +81,7 @@ function results = pass_index( varargin )
 % modified, we would appreciate it if you cited our paper:
 % Climer, J. R., Newman, E. L. and Hasselmo, M. E. (2013), Phase coding by 
 %   grid cells in unconstrained environments: two-dimensional phase 
-%   precession. European Journal of Neuroscience, 38: 2526–2541. doi: 
+%   precession. European Journal of Neuroscience, 38: 2526â€“2541. doi: 
 %   10.1111/ejn.12256
 %
 % RELEASE NOTES
@@ -190,7 +190,7 @@ results.rho = rho;
 results.p = p;
 results.s = s;
 results.b = b;
-results.is_precessing = p<0.05&&rad2deg(pi*s)<-22&&rad2deg(pi*2)>-1440;
+results.is_precessing = p<0.05&&rad2deg(2*pi*s)<-22&&rad2deg(2*pi*s)>-1440;
 
 % Density
 try
