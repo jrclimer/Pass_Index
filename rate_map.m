@@ -145,10 +145,18 @@ temp = temp(2:end);
 for i=1:numel(props)
     eval(['[' temp ']=ind2sub(size(map),props(i).PixelIdxList);']);
 end
-props = props(~cellfun(@(x)any(x(:)==1)||...
-    eval([repmat('any(',[1 size(pos,2)]) 'x==repmat(size(map),[size(x,1) 1])' repmat(')',[1 size(pos,2)])]),...
-    {props.PixelList}));
-temp = cellfun(@(x)[',y(:,' num2str(x) ')'],num2cell(1:size(pos,2)),'UniformOutput',false);
+
+goods = false(size(props));
+for i=1:numel(goods)
+    x = props(i).PixelList;
+    goods(i) = eval([repmat('any(',[1 size(pos,2)]) 'x==repmat(size(map),[size(x,1) 1])' repmat(')',[1 size(pos,2)])]);
+end
+props = props(~goods);
+% props = props(~cellfun(@(x)any(x(:)==1)||...
+%     eval([repmat('any(',[1 size(pos,2)]) 'x==repmat(size(map),[size(x,1) 1])' repmat(')',[1 size(pos,2)])]),...
+%     {props.PixelList}));
+
+temp = cellfun(@(x)[',y(goods,' num2str(x) ')'],num2cell(1:size(pos,2)),'UniformOutput',false);
 temp = [temp{:}];
 for i=1:numel(props)
    x = props(i).PixelList;
@@ -156,8 +164,13 @@ for i=1:numel(props)
    for j=1:size(x,2)
        y = x;
        y(:,j) = y(:,j)+1;
+       goods = all(y<=size(occupancy),2);
+
        eval(['pixelselect(sub2ind(size(occupancy)' temp '))=true;']);
        y(:,j) = y(:,j)-2;
+       goods = all(y>0,2);
+
+
        eval(['pixelselect(sub2ind(size(occupancy)' temp '))=true;']);       
    end
    y = x;
