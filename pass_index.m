@@ -56,6 +56,8 @@ function results = pass_index( varargin )
 %   Hz as [low high] or as a function handle with the form lfp_phases =
 %   custom_phase_func(lfp_ts,lfp_sig) for custom phase estimation, for
 %   example, by taking asymmetry into account
+%   * slope_bnds: Default []. Bounds for slope of precession (passed to
+%   anglereg)
 %
 %   RETURNS
 %   * RESULTS: A struct containing the following fields:
@@ -85,6 +87,8 @@ function results = pass_index( varargin )
 %   10.1111/ejn.12256
 %
 % RELEASE NOTES
+%   v1.02 2022-05-31 Added slope range for anglereg
+%   v1.01 2022-03-16 Bug fixes for r2022 and fixed pression slope range
 %   v1.0 2014-10-15 Release (Jason Climer, jason.r.climer@gmail.com)
 %
 % This file is part of pass_index.
@@ -185,7 +189,7 @@ results.spk_theta_phase = spk_theta_phase;
 results.filtered_lfp = filtered_lfp;
 results.filtered_lfp_phase = lfp_phase;
 
-[rho,p,s,b] = kempter_lincirc(spk_pass_index,spk_theta_phase); % Correlation
+[rho,p,s,b] = kempter_lincirc(spk_pass_index,spk_theta_phase,[],[],slope_bnds); % Correlation
 results.rho = rho;
 results.p = p;
 results.s = s;

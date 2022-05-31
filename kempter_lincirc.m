@@ -13,6 +13,8 @@ function [ rho,p,s,b ] = kempter_lincirc( x,theta,varargin )
 %   anglereg
 %   * B: The presumed best phase shift in radians. If not entered, uses
 %   anglereg
+%   * slope_bnds: Default []. Bounds for slope of precession (passed to
+%   anglereg)
 %
 %   RETURNS
 %   * rho: The linear-circular correlation coefficient
@@ -71,8 +73,12 @@ x = x(goods);
 theta = theta(goods);
 
 % Angular regression
-if ~exist('s','var')
-    [s,b]=anglereg(x,theta,varargin{:});
+if ~exist('s','var')||isempty(s)
+    if nargin==5
+        [s,b]=anglereg(x,theta,varargin{3});
+    else
+        [s,b]=anglereg(x,theta);
+    end
 end
 
 n = length(x);

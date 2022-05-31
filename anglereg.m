@@ -20,9 +20,9 @@ function [ s,b ] = anglereg( x, theta, bnds)
 %
 % This code has been freely distributed by the authors. If used or
 % modified, we would appreciate it if you cited our paper:
-% Climer, J. R., Newman, E. L. and Hasselmo, M. E. (2013), Phase coding by 
-%   grid cells in unconstrained environments: two-dimensional phase 
-%   precession. European Journal of Neuroscience, 38: 2526–2541. doi: 
+% Climer, J. R., Newman, E. L. and Hasselmo, M. E. (2013), Phase coding by
+%   grid cells in unconstrained environments: two-dimensional phase
+%   precession. European Journal of Neuroscience, 38: 2526–2541. doi:
 %   10.1111/ejn.12256
 %
 % RELEASE NOTES
@@ -34,27 +34,27 @@ function [ s,b ] = anglereg( x, theta, bnds)
 % Copyright (c) 2014, Trustees of Boston University
 % All rights reserved.
 %
-% Redistribution and use in source and binary forms, with or without 
-% modification, are permitted provided that the following conditions are 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
 % met:
 %
-% 1. Redistributions of source code must retain the above copyright notice, 
+% 1. Redistributions of source code must retain the above copyright notice,
 % this list of conditions and the following disclaimer.
 %
-% 2. Redistributions in binary form must reproduce the above copyright 
-% notice, this list of conditions and the following disclaimer in the 
+% 2. Redistributions in binary form must reproduce the above copyright
+% notice, this list of conditions and the following disclaimer in the
 % documentation and/or other materials provided with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
-% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED 
-% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A 
-% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER 
-% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
-% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
-% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
-% PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
-% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+% PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 % Parse inputs
@@ -73,16 +73,14 @@ end
 
 X = [ones(size(x(:))) x(:)];
 
-
+% Initial guess from least squares and rolling phase
+phi = fminbnd(@(phi)sum((mod(theta(:)+phi,2*pi)-X*(inv(X'*X)*X'*mod(theta(:)+phi,2*pi))).^2),0,2*pi,...
+    optimset('Display','off','TolX',1e-10));
+b = inv(X'*X)*X'*mod(theta(:)+phi,2*pi);
+b(1) = b(1)-phi;
+n = length(x);
 
 if isempty(bnds)% No bounds
-    % Initial guess from least squares and rolling phase
-    phi = fminbnd(@(phi)sum((mod(theta(:)+phi,2*pi)-X*(inv(X'*X)*X'*mod(theta(:)+phi,2*pi))).^2),0,2*pi,...
-    optimset('Display','off','TolX',1e-10));
-    b = inv(X'*X)*X'*mod(theta(:)+phi,2*pi);
-    b(1) = b(1)-phi;
-    n = length(x);
-    
     % Use above initial guess...
     [s1,r1] = fminsearch(...
         @(s)-sqrt((1/n*sum(cos(theta-2*pi*s*x)))^2+(1/n*sum(sin(theta-2*pi*s*x)))^2),...
@@ -100,7 +98,7 @@ if isempty(bnds)% No bounds
     end
 else
     % Use the bounds the user has given
-    s = fminbnd(@(s)-sqrt((1/n*sum(cos(theta-2*pi*s*x)))^2+(1/n*sum(sin(theta-2*pi*s*x)))^2),bnds(1),bnds(2));
+    s = fmincon(@(s)-sqrt((1/n*sum(cos(theta-2*pi*s*x)))^2+(1/n*sum(sin(theta-2*pi*s*x)))^2),b(2),[],[],[],[],bnds(1),bnds(2),[],optimoptions("fmincon",'Display','none'));
 end
 
 % Slope

@@ -44,6 +44,8 @@ function p = pass_index_parser(varargin)
 %   Hz as [low high] or as a function handle with the form lfp_phases = 
 %   custom_phase_func(lfp_ts,lfp_sig) for custom phase estimation, for 
 %   example, by taking asymmetry into account
+%   * p.Results.slope_bnds: Default []. Bounds for slope of precession (passed to
+%   anglereg)
 %
 %   RETURNS
 %   * P: An input parser with all inputs correctly parsed and default
@@ -103,24 +105,25 @@ for i = fields(p.Results)'
 end
 
 % Add parser terms
-p.addParamValue('method','grid',@(x)(ischar(x)&&...
+p.addParameter('method','grid',@(x)(ischar(x)&&...
     ismember(x,{'custom','grid','place'}))...
     ||isequal(class(x),'function_handle'));
-p.addParamValue('binside','auto',@(x)isscalar(x)||isequal(x,'auto'));
-p.addParamValue('smth_width','auto',@(x)isscalar(x)||isequal(x,'auto'));
-p.addParamValue('field_index',@field_index_fun,...
+p.addParameter('binside','auto',@(x)isscalar(x)||isequal(x,'auto'));
+p.addParameter('smth_width','auto',@(x)isscalar(x)||isequal(x,'auto'));
+p.addParameter('field_index',@field_index_fun,...
     @(x)isequal(class(x),'function_handle')||...
     (isvector(x)&&isnumeric(x)&&numel(x)==numel(pos_ts)));
-p.addParamValue('sample_along','auto',@(x)(ischar(x)&&...
+p.addParameter('sample_along','auto',@(x)(ischar(x)&&...
     ismember(x,{'auto','arc_length','raw_ts'}))||...
     (isnumeric(x)&&size(x,2)==3&&all(diff(x(:,1))>0))||...
     isequal(class(x),'function_handle'));
-p.addParamValue('filter_band','auto',...
+p.addParameter('filter_band','auto',...
     @(x)(ischar(x)&&ismember(x,{'auto'}))||...
     (isnumeric(x)&&numel(x)==2&&x(1)<x(2))||...
     isequal(class(x),'function_handle'));
-p.addParamValue('lfp_filter',[6 10],@(x)(isnumeric(x)&&isequal(size(x),[2 1]))||...
+p.addParameter('lfp_filter',[6 10],@(x)(isnumeric(x)&&isequal(size(x),[2 1]))||...
     isequal(class(x),'function_handle'));
+p.addParameter('slope_bnds',[]);
 
 p.parse(varargin{:});
 
@@ -249,6 +252,14 @@ if ischar(p.Results.sample_along)
     end
     p.parse(varargin{:});
 end
+
+% if any(isinf(p.Results.slope_bnds))
+%     slope_bnds = p.Results.slope_bnds;
+%     slope_bnds(isinf(slope_bnds))=realmax.*sign(slope_bnds(isinf(slope_bnds)));
+%     varargin{find(cellfun(@(x)isequal(x,'slope_bnds'),varargin))+1}=slope_bnds;
+%     p.parse(varargin{:});
+%     clear slope_bnds;
+% end
 
 end
 
