@@ -227,7 +227,7 @@ ip = P;
 ip.KeepUnmatched=true;
 ip.addParamValue('plots',{},@(x)(iscellstr(x)&&...
     all(ismember(x,all_plots)))||isequal(x,'all')||isequal(x,0)||isequal(x,1)||...
-    (ischar(x)&&ismember(x,plots)));
+    (ischar(x)&&ismember(x,all_plots)));
 ip.parse(varargin{:});
 
 plots = ip.Results.plots;
@@ -275,7 +275,25 @@ if numel(plots)>0
                         plot(pos(:,1),pos(:,2),'k');
                         spkpos = spk_pos(pos_ts,pos,spk_ts);
                         hold on;
-                        scatter(spkpos(:,1),spkpos(:,2),'o','filled','CData',spk_pass_index,'SizeData',20);
+    
+                        % keyboard
+                        %%
+                        clc;
+                        cmap = hot(200);
+                        cmap = cmap(size(cmap,1)-128:end,:);
+                        cmap = [cmap;flipud(cmap(2:end,[3 2 1]))];
+                        
+                        % imagesc(permute(cmap,[1 3 2]))
+
+                        caxis = linspace(-1,1,256);
+                        [~,~,cind] = histcounts(spk_pass_index,caxis);
+                        cind(cind<1) = 1;
+                        cind(cind>255) = 255;
+
+                        scatter(spkpos(:,1),spkpos(:,2),'o','filled','CData',cmap(cind,:),'SizeData',20);
+                        %%
+
+                        % scatter(spkpos(:,1),spkpos(:,2),'o','filled','CData',spk_pass_index,'SizeData',20);
                         line(...
                             [-floor(0.2*range(pos(:,1))/5)*5 0]+0.95*max(pos(:,1)),...
                             [1 1]*(min(pos(:,2)-0.1*range(pos(:,2)))),...
