@@ -123,17 +123,28 @@ dims = minmax(pos')';
 dims(1,:) = floor(dims(1,:)/binside)*binside;
 dims(2,:) = ceil(dims(2,:)/binside)*binside;
 dims = cellfun(@(x,y)x:binside:y,num2cell(dims(1,:)),num2cell(dims(2,:)),'UniformOutput',false)';
-
-% Find occupancy
-[occupancy,~,centers] = histcn(pos,dims{:});
+%%
+centers = cellfun(@(x)mean([x(2:end);x(1:end-1)]),dims,UniformOutput=false);
+occupancy = histcounts2(pos(:,1),pos(:,2),dims{:});
 occupancy = occupancy*mean(diff(pos_ts));
+spk_loc = NaN(numel(spk_ts),2);
+[map,~,~,spk_loc(:,1),spk_loc(:,2)] = histcounts2(spkpos(:,1),spkpos(:,2),dims{:});
+map = map./occupancy;
+pos_loc = NaN(size(pos_orig));
+[~,~,~,pos_loc(:,1),pos_loc(:,2)] = histcounts2(pos_orig(:,1),pos_orig(:,2),dims{:});
+%%
+% Find occupancy
+% [occupancy,~,centers] = histcn(pos,dims{:});
+% occupancy = occupancy*mean(diff(pos_ts));
+% 
+% % Count spikes
+% [map,~,~,spk_loc] = histcn(spkpos,dims{:});
+% map = map./occupancy; % occupancy normalize
+% map(occupancy==0) = NaN;
 
-% Count spikes
-[map,~,~,spk_loc] = histcn(spkpos,dims{:});
-map = map./occupancy; % occupancy normalize
-map(occupancy==0) = NaN;
+% [~,~,~,pos_loc] = histcn(pos_orig,dims{:});
 
-[~,~,~,pos_loc] = histcn(pos_orig,dims{:});
+%%
 
 % % SMOOTHING % %
 
